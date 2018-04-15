@@ -1,10 +1,17 @@
 
+electron = require('electron');
+
 window.onload = start;
 
 const minStepSize = 3;
 
 function start() {
-    new Content();
+    let content = new Content();
+    let repaintButton = document.getElementById('repaintButton');
+    let closeButton = document.getElementById('closeButton');
+
+    repaintButton.onclick = () => content.repaint();
+    closeButton.onclick = () => electron.remote.getCurrentWindow().close();
 }
 
 class Content {
@@ -16,6 +23,10 @@ class Content {
 
     resized() {
         console.error('resized');
+        this.drawContent();
+    }
+
+    repaint() {
         this.drawContent();
     }
 
