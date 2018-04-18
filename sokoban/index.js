@@ -1,17 +1,36 @@
 electron = require('electron');
 
-window.onload = start;
+window.onload = () => new App().start();
 
 const cellWidth = 50;
 const cellHeight = 50;
 
-function start() {
-    let content = new Content();
-    let repaintButton = document.getElementById('repaintButton');
-    let closeButton = document.getElementById('closeButton');
+const cellImages = {};
+
+class App {
+    start() {
+        this.content = new Content(20, 20);
+        this.repaintButton = document.getElementById('repaintButton');
+        this.closeButton = document.getElementById('closeButton');
+        
+        this.loadCellImages();
+        
+        this.repaintButton.onclick = () => this.content.repaint();
+        this.closeButton.onclick = () => electron.remote.getCurrentWindow().close();
+    }
     
-    repaintButton.onclick = () => content.repaint();
-    closeButton.onclick = () => electron.remote.getCurrentWindow().close();
+    loadCellImages()
+    {
+        cellImages[1] = this.loadImage("wall.png");
+    }
+    
+    loadImage(path)
+    {
+        const result = new Image();
+        result.src = path;
+        result.onload = () => this.content.repaint();
+        return result;
+    }
 }
 
 class Grid {
@@ -19,6 +38,24 @@ class Grid {
         this.width = width;
         this.height = height;
         this.data = new Int8Array(width * height);
+        
+        this.dummyInit();
+    }
+    
+    dummyInit() {
+        const xCenter = this.width / 2;
+        const yCenter = this.width / 2;
+        for (let x = 0; x < this.width; ++x) {
+            for (let y = 0; y < this.height; ++y) {
+                const deltaX = x - xCenter;
+                const deltaY = y - yCenter;
+                const distanceSquared = deltaX ** 2 + deltaY ** 2;
+                console.info(distanceSquared);
+                if (distanceSquared > 5 && distanceSquared < 15) {
+                    this.set(x, y, 1);
+                }
+            }
+        }
     }
     
     get(x, y) {
@@ -49,7 +86,6 @@ class Content {
     }
     
     resized() {
-        console.error('resized');
         this.drawContent();
     }
     
@@ -62,7 +98,7 @@ class Content {
         const w = this.canvas.width;
         const h = this.canvas.height;
         const c = this.canvas.getContext('2d');
-        new DrawGrid(c, w, h, grid).run();
+        new DrawGrid(c, w, h, this.grid).run();
     }
     
     setCanvasSize() {
@@ -83,15 +119,28 @@ class DrawGrid {
     setOffsets() {
         const gridWidthInPixels = this.grid.width * cellWidth;
         const gridHeightInPixels = this.grid.height * cellHeight;
-        this.xOffset = (width - gridWidthInPixels) / 2;
-        this.yOffset = (height - gridHeightInPixels) / 2;
+        this.xOffset = (this.width - gridWidthInPixels - cellWidth) / 2;
+        this.yOffset = (this.height - gridHeightInPixels - cellHeight) / 2;
     }
     
     run() {
-        for (let y = 0; y < this.h; ++y) {
-            for (let x = 0; x < this.w; ++x) {
-            
+        for (let gridY = 0; gridY < this.grid.height; ++gridY) {
+            for (let gridX = 0; gridX < this.grid.width; ++gridX) {
+                this.drawCell(gridX, gridY);
             }
+        }
+    }
+    
+    drawCell(gridX, gridY) {
+        const x = this.xOffset + cellWidth * gridX;
+        const y = this.yOffset + cellHeight * gridY;
+        this.drawCellImage(x, y, this.grid.get(gridX, gridY));
+    }
+    
+    drawCellImage(x, y, cellType) {
+        const cellImage = cellImages[cellType];
+        if (cellImage != null) {
+            this.c.drawImage(cellImage, x, y);
         }
     }
 }

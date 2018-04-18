@@ -1,6 +1,6 @@
-console.error(require.resolve('electron'))
+console.error(require.resolve('electron'));
 
-const DEBUG = false;
+const DEBUG = (process.argv[2] === "debug");
 
 const electron = require('electron');
 const path = require('path');
