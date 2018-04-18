@@ -9,12 +9,13 @@ const url = require('url');
 function createWindow() {
     let win = new electron.BrowserWindow({width: 800, height: 600});
     win.setMenu(null);
+
     if (DEBUG) {
         win.openDevTools();
     }
 
     win.loadURL(url.format({
-        pathname: path.join(__dirname, 'page/index.html'),
+        pathname: path.join(__dirname, 'sokoban/index.html'),
         protocol: 'file:',
         slashes: true
     }))
