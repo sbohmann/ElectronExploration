@@ -15,7 +15,7 @@ function createWindow() {
     }
 
     win.loadURL(url.format({
-        pathname: path.join(__dirname, 'sokoban/index.html'),
+        pathname: path.join(__dirname, 'svg/index.html'),
         protocol: 'file:',
         slashes: true
     }))
